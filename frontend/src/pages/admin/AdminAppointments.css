@@ -1,0 +1,243 @@
+.admin-appointments-list {
+  display: grid;
+  gap: 20px;
+}
+
+.admin-appointment-card {
+  padding: 25px;
+}
+
+.user-email {
+  color: #666;
+  font-size: 14px;
+  margin-top: 5px;
+}
+
+.appointment-info {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  margin: 20px 0;
+  padding: 20px 0;
+  border-top: 1px solid #eee;
+  border-bottom: 1px solid #eee;
+}
+
+.info-column h4 {
+  color: #667eea;
+  margin-bottom: 10px;
+  font-size: 14px;
+  text-transform: uppercase;
+}
+
+.info-column p {
+  margin: 5px 0;
+  color: #666;
+}
+
+.receipt-section {
+  margin: 20px 0;
+}
+
+.receipt-section h4 {
+  margin-bottom: 10px;
+  color: #374151;
+  font-weight: 600;
+}
+
+/* Receipt Thumbnail */
+.receipt-thumbnail {
+  position: relative;
+  width: 200px;
+  height: 150px;
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+  border: 2px solid #e5e7eb;
+  transition: all 0.3s ease;
+}
+
+.receipt-thumbnail:hover {
+  transform: scale(1.05);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  border-color: #DC143C;
+}
+
+.receipt-thumbnail img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.thumbnail-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.receipt-thumbnail:hover .thumbnail-overlay {
+  opacity: 1;
+}
+
+.thumbnail-overlay span {
+  color: white;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.receipt-section a {
+  color: #667eea;
+  text-decoration: none;
+}
+
+/* Confirmation Modal Styles */
+.confirmation-modal-admin {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  max-width: 600px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  z-index: 9999;
+}
+
+.approval-summary {
+  background: #f9fafb;
+  padding: 20px;
+  border-radius: 12px;
+  margin-top: 20px;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.summary-row:last-child {
+  border-bottom: none;
+}
+
+.summary-row strong {
+  color: #374151;
+  font-weight: 600;
+}
+
+.summary-row span {
+  color: #666;
+  text-align: right;
+}
+
+.btn-secondary {
+  background: #f3f4f6;
+  color: #666;
+}
+
+.btn-secondary:hover {
+  background: #e5e7eb;
+  color: #1a1a1a;
+}
+
+.receipt-section a:hover {
+  text-decoration: underline;
+}
+
+.admin-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9998;
+}
+
+.modal-content {
+  background: white;
+  padding: 30px;
+  border-radius: 10px;
+  max-width: 500px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  z-index: 9999;
+  position: relative;
+}
+
+.modal-content h2 {
+  margin-bottom: 20px;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+/* Receipt Modal */
+.receipt-modal-overlay {
+  backdrop-filter: blur(8px);
+  background-color: rgba(0, 0, 0, 0.8);
+}
+
+.receipt-modal-content {
+  background: white;
+  padding: 2rem;
+  border-radius: 16px;
+  max-width: 90vw;
+  max-height: 90vh;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-close-btn {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: #DC143C;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 10;
+}
+
+.modal-close-btn:hover {
+  background: #b91436;
+  transform: scale(1.1);
+}
+
+.receipt-full-image {
+  max-width: 100%;
+  max-height: 85vh;
+  object-fit: contain;
+  border-radius: 12px;
+}

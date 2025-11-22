@@ -1,0 +1,359 @@
+.booking-container {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 30px;
+  margin: 30px 0;
+}
+
+.service-summary {
+  height: fit-content;
+  background: linear-gradient(135deg, #ffffff, #f8f9fa);
+  border: 1px solid #e5e7eb;
+  transition: all 0.3s ease;
+}
+
+.service-summary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
+}
+
+.service-summary .price {
+  font-size: 28px;
+  font-weight: bold;
+  color: #DC143C;
+  margin: 15px 0;
+}
+
+.booking-form h3 {
+  margin-bottom: 25px;
+  color: #333;
+  font-weight: 600;
+}
+
+.form-section {
+  margin-bottom: 30px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.form-section:last-of-type {
+  border-bottom: none;
+}
+
+.form-section h4 {
+  margin-bottom: 20px;
+  color: #DC143C;
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+/* Modern Input Styling */
+.form-group {
+  margin-bottom: 1.5rem;
+  position: relative;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #374151;
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 0.875rem 1rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  background-color: #ffffff;
+  color: #1f2937;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: #DC143C;
+  box-shadow: 0 0 0 3px rgba(220, 20, 60, 0.1);
+  background-color: #ffffff;
+}
+
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+  color: #9ca3af;
+}
+
+.form-group input[type="file"] {
+  padding: 0.75rem;
+  border-style: dashed;
+  cursor: pointer;
+}
+
+.form-group input[type="file"]:hover {
+  border-color: #DC143C;
+  background-color: #fef2f2;
+}
+
+.form-group small {
+  display: block;
+  margin-top: 0.5rem;
+  color: #6b7280;
+  font-size: 0.875rem;
+}
+
+.form-group small.text-danger {
+  color: #EF4444;
+  font-weight: 500;
+}
+
+/* Appointment Confirmation Modal */
+.appointment-confirm-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  min-width: 600px;
+  max-width: 700px;
+  max-height: 90vh;
+  overflow-y: auto;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  z-index: 9999;
+}
+
+.modal-header-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+  color: white;
+  margin: 0 auto 16px;
+}
+
+.confirm-message {
+  text-align: center;
+  color: #666;
+  font-size: 15px;
+  margin-bottom: 24px;
+}
+
+.summary-section {
+  margin-bottom: 24px;
+  padding: 20px;
+  background: #f9fafb;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+}
+
+.summary-section h4 {
+  margin: 0 0 16px 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: #1a1a1a;
+  border-bottom: 2px solid #DC143C;
+  padding-bottom: 8px;
+}
+
+.summary-section p {
+  margin: 8px 0;
+  color: #666;
+}
+
+.summary-section p strong {
+  color: #1a1a1a;
+  font-size: 18px;
+}
+
+.summary-price {
+  font-size: 20px;
+  font-weight: 700;
+  color: #DC143C !important;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.summary-grid > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.summary-grid label {
+  font-size: 13px;
+  color: #666;
+  font-weight: 500;
+}
+
+.summary-grid span {
+  font-size: 15px;
+  color: #1a1a1a;
+  font-weight: 600;
+}
+
+.notes-text {
+  background: white;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  color: #666 !important;
+  font-size: 14px !important;
+  line-height: 1.6;
+}
+
+@media (max-width: 768px) {
+  .appointment-confirm-modal {
+    min-width: 90%;
+    margin: 0 5%;
+  }
+
+  .summary-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.form-group textarea {
+  min-height: 100px;
+  resize: vertical;
+  font-family: inherit;
+}
+
+.form-group small {
+  display: block;
+  margin-top: 0.5rem;
+  color: #6b7280;
+  font-size: 0.875rem;
+}
+
+.form-group small.text-danger {
+  color: #ef4444;
+}
+
+.form-group select {
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23374151' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  padding-right: 2.5rem;
+}
+
+.form-group select:disabled {
+  background-color: #f3f4f6;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Price Display */
+.price-section {
+  background: linear-gradient(135deg, #fef2f2, #ffffff);
+  padding: 1.5rem;
+  border-radius: 12px;
+  margin: 1rem 0;
+  border: 2px solid #fecaca;
+}
+
+.original-price {
+  font-size: 1rem;
+  color: #6b7280;
+  text-decoration: line-through;
+  margin-bottom: 0.5rem;
+}
+
+.discounted-price {
+  font-size: 1.75rem;
+  font-weight: bold;
+  color: #DC143C;
+  margin-bottom: 0.5rem;
+}
+
+.savings-badge {
+  display: inline-block;
+  background: linear-gradient(135deg, #DC143C, #b91436);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+}
+
+/* Button Styling */
+.btn-block {
+  width: 100%;
+  padding: 1rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.btn-block:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(220, 20, 60, 0.3);
+}
+
+.btn-block:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Receipt Preview */
+.receipt-preview {
+  margin-top: 1rem;
+  padding: 1rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  background: #f9fafb;
+  position: relative;
+}
+
+.receipt-preview img {
+  width: 100%;
+  max-height: 300px;
+  object-fit: contain;
+  border-radius: 8px;
+}
+
+.btn-remove-preview {
+  margin-top: 0.75rem;
+  padding: 0.5rem 1rem;
+  background: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 100%;
+}
+
+.btn-remove-preview:hover {
+  background: #dc2626;
+  transform: translateY(-1px);
+}
+
+@media (max-width: 768px) {
+  .booking-container {
+    grid-template-columns: 1fr;
+  }
+  
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    padding: 0.75rem;
+    font-size: 0.95rem;
+  }
+}

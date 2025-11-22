@@ -1,0 +1,57 @@
+
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>SETCAM Analytics Report</title>
+          <style>
+            body { font-family: Arial, sans-serif; padding: 20px; }
+            h1 { color: #8B0000; text-align: center; }
+            h2 { color: #DC143C; margin-top: 30px; }
+            table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+            th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+            th { background-color: #8B0000; color: white; }
+            tr:nth-child(even) { background-color: #f9f9f9; }
+            .info { text-align: center; color: #666; margin: 10px 0; }
+          </style>
+        </head>
+        <body>
+          <h1>SETCAM Analytics Report</h1>
+          <p class="info">Generated: 11/20/2025, 3:32:35 PM</p>
+          <p class="info">Filter: ALL</p>
+          
+          <h2>Summary Statistics</h2>
+          <table>
+            <thead>
+              <tr><th>Metric</th><th>Count</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Total Appointments</td><td>2</td></tr>
+              <tr><td>Pending</td><td>1</td></tr>
+              <tr><td>Approved</td><td>0</td></tr>
+              <tr><td>Completed</td><td>1</td></tr>
+              <tr><td>Rejected</td><td>0</td></tr>
+            </tbody>
+          </table>
+          
+          <h2>Vehicle Type Distribution</h2>
+          <table>
+            <thead>
+              <tr><th>Vehicle Type</th><th>Count</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Standard Smoke Emission Test</td><td>2</td></tr>
+            </tbody>
+          </table>
+          
+          <h2>Completion Rates by Vehicle</h2>
+          <table>
+            <thead>
+              <tr><th>Vehicle Type</th><th>Completion Rate (%)</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Standard Smoke Emission Test</td><td>50</td></tr>
+            </tbody>
+          </table>
+        </body>
+        </html>
+      

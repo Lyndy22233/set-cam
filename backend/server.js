@@ -40,6 +40,7 @@ app.get('/api/health/full', async (req, res) => {
   const health = {
     server: 'OK',
     firebase: 'Unknown',
+    smtp: 'Not configured',
     timestamp: new Date().toISOString()
   };
 
@@ -52,7 +53,64 @@ app.get('/api/health/full', async (req, res) => {
     health.firebase = 'Error: ' + error.message;
   }
 
+  // Check SMTP configuration
+  if (process.env.SMTP_USER && process.env.SMTP_PASS) {
+    health.smtp = {
+      configured: true,
+      host: process.env.SMTP_HOST,
+      port: process.env.SMTP_PORT,
+      user: process.env.SMTP_USER
+    };
+  }
+
   res.status(200).json(health);
+});
+
+// Test SMTP endpoint
+app.post('/api/test-smtp', async (req, res) => {
+  try {
+    const nodemailer = require('nodemailer');
+    
+    if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
+      return res.status(400).json({
+        success: false,
+        message: 'SMTP not configured'
+      });
+    }
+
+    const transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST || 'smtp.gmail.com',
+      port: parseInt(process.env.SMTP_PORT) || 587,
+      secure: false,
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS
+      },
+      connectionTimeout: 10000,
+      greetingTimeout: 10000,
+      socketTimeout: 10000
+    });
+
+    // Verify connection
+    await transporter.verify();
+    
+    res.status(200).json({
+      success: true,
+      message: 'SMTP connection successful',
+      config: {
+        host: process.env.SMTP_HOST,
+        port: process.env.SMTP_PORT,
+        user: process.env.SMTP_USER
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'SMTP connection failed',
+      error: error.message,
+      code: error.code
+    });
+  }
 });
 
 // Error handling middleware

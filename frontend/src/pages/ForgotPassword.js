@@ -27,6 +27,8 @@ const ForgotPassword = () => {
       await axios.post(`${process.env.REACT_APP_API_URL}/auth/send-otp`, {
         email,
         purpose: 'password-reset'
+      }, {
+        timeout: 10000 // 10 second timeout
       });
       
       setStep(2);
@@ -45,7 +47,13 @@ const ForgotPassword = () => {
       }, 1000);
     } catch (error) {
       console.error('Error sending OTP:', error);
-      toast.error(error.response?.data?.message || 'Failed to send OTP. Please try again.');
+      if (error.code === 'ECONNABORTED') {
+        toast.error('Request timeout. Please check your internet connection or disable browser extensions.');
+      } else if (error.message && error.message.includes('Network Error')) {
+        toast.error('Network error. Please disable ad blockers or privacy extensions and try again.');
+      } else {
+        toast.error(error.response?.data?.message || 'Failed to send OTP. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
@@ -62,6 +70,8 @@ const ForgotPassword = () => {
       await axios.post(`${process.env.REACT_APP_API_URL}/auth/verify-otp`, {
         email,
         otp
+      }, {
+        timeout: 10000 // 10 second timeout
       });
       
       setStep(3);
@@ -95,6 +105,8 @@ const ForgotPassword = () => {
       await axios.post(`${process.env.REACT_APP_API_URL}/auth/reset-password`, {
         email,
         newPassword
+      }, {
+        timeout: 10000 // 10 second timeout
       });
       
       toast.success('Password reset successful! You can now login.');

@@ -83,6 +83,16 @@ const Services = () => {
 
   // Match Firestore services with predefined categories
   const getServiceData = (category) => {
+    if (services.length === 0) {
+      // Still loading, return category with unavailable
+      return {
+        ...category,
+        firestoreId: null,
+        price: category.price,
+        available: false
+      };
+    }
+
     // Try to find matching service by name keywords
     const firestoreService = services.find(s => {
       const serviceName = s.name.toLowerCase();
@@ -95,6 +105,18 @@ const Services = () => {
       
       return false;
     });
+
+    // If no specific match found, try to match with any available service by index
+    if (!firestoreService && services.length > 0) {
+      const index = serviceCategories.findIndex(cat => cat.id === category.id);
+      const fallbackService = services[index] || services[0];
+      return {
+        ...category,
+        firestoreId: fallbackService.id,
+        price: fallbackService.price || category.price,
+        available: true
+      };
+    }
     
     return {
       ...category,

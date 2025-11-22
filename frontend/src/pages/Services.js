@@ -83,13 +83,24 @@ const Services = () => {
 
   // Match Firestore services with predefined categories
   const getServiceData = (category) => {
-    const firestoreService = services.find(s => 
-      s.name.toLowerCase().includes(category.name.toLowerCase().split(' ')[0])
-    );
+    // Try to find matching service by name keywords
+    const firestoreService = services.find(s => {
+      const serviceName = s.name.toLowerCase();
+      const categoryName = category.name.toLowerCase();
+      
+      // Match by keywords: motorcycles, 4 wheels, 6 wheels
+      if (categoryName.includes('motorcycles') && serviceName.includes('motorcycle')) return true;
+      if (categoryName.includes('4 wheels') && (serviceName.includes('4') || serviceName.includes('four'))) return true;
+      if (categoryName.includes('6 wheels') && (serviceName.includes('6') || serviceName.includes('six'))) return true;
+      
+      return false;
+    });
+    
     return {
       ...category,
-      firestoreId: firestoreService?.id || category.id,
-      price: firestoreService?.price || category.price
+      firestoreId: firestoreService?.id,
+      price: firestoreService?.price || category.price,
+      available: !!firestoreService
     };
   };
 
@@ -146,12 +157,22 @@ const Services = () => {
                   ))}
                 </ul>
                 
-                <Link 
-                  to={`/book/${serviceData.firestoreId}`} 
-                  className="btn-book-service"
-                >
-                  Book Now
-                </Link>
+                {serviceData.available ? (
+                  <Link 
+                    to={`/book/${serviceData.firestoreId}`} 
+                    className="btn-book-service"
+                  >
+                    Book Now
+                  </Link>
+                ) : (
+                  <button 
+                    className="btn-book-service btn-disabled" 
+                    disabled
+                    title="Service temporarily unavailable"
+                  >
+                    Coming Soon
+                  </button>
+                )}
               </motion.div>
             );
           })}

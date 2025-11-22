@@ -318,8 +318,13 @@
 }
 
 /* Mobile Menu Styles */
-.mobile-menu-toggle {
+.mobile-actions {
   display: none;
+  align-items: center;
+  gap: 12px;
+}
+
+.mobile-menu-toggle {
   background: none;
   border: none;
   color: white;
@@ -431,14 +436,14 @@
     font-weight: 600;
   }
 
-  /* Hide user-specific actions on mobile, show in hamburger */
-  .navbar-actions {
+  /* Hide desktop actions on mobile */
+  .desktop-actions {
     display: none;
   }
 
-  /* Show hamburger button on mobile */
-  .mobile-menu-toggle {
-    display: block;
+  /* Show mobile actions (notification + hamburger) on mobile */
+  .mobile-actions {
+    display: flex;
   }
 
   /* Show mobile menu */

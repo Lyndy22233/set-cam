@@ -109,7 +109,8 @@ const Navbar = ({ user }) => {
             )}
           </ul>
 
-          <div className="navbar-actions">
+          {/* Desktop Actions */}
+          <div className="navbar-actions desktop-actions">
             {user ? (
               <>
                 {!isAdmin && (
@@ -130,14 +131,21 @@ const Navbar = ({ user }) => {
             )}
           </div>
 
-          {/* Mobile Hamburger Button */}
-          <button 
-            className="mobile-menu-toggle"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            aria-label="Toggle menu"
-          >
-            {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
+          {/* Mobile Actions: Notification Bell + Hamburger */}
+          <div className="mobile-actions">
+            {user && <NotificationCenter />}
+            {user ? (
+              <button 
+                className="mobile-menu-toggle"
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                aria-label="Toggle menu"
+              >
+                {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+              </button>
+            ) : (
+              <Link to="/login" className="btn-login">Login</Link>
+            )}
+          </div>
         </div>
 
         {/* Mobile Menu */}

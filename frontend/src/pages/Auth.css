@@ -371,3 +371,76 @@ small.input-hint,
   color: #6b7280;
   font-size: 0.875rem;
 }
+
+/* OTP Verification Styles */
+.otp-verification-container {
+  padding: 20px 0;
+}
+
+.otp-input {
+  width: 100%;
+  padding: 1.5rem 1rem;
+  font-size: 32px !important;
+  letter-spacing: 1em;
+  text-align: center;
+  border: 3px solid #e5e7eb;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  font-weight: 600;
+  background: #f9fafb;
+}
+
+.otp-input:focus {
+  outline: none;
+  border-color: #DC143C;
+  background: white;
+  box-shadow: 0 0 0 4px rgba(220, 20, 60, 0.1);
+}
+
+.otp-resend-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 16px 0;
+  font-size: 14px;
+  color: #666;
+}
+
+.resend-cooldown {
+  color: #DC143C;
+  font-weight: 500;
+}
+
+.btn-text-link {
+  background: none;
+  border: none;
+  color: #DC143C;
+  font-weight: 500;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 0;
+  text-decoration: underline;
+  transition: opacity 0.2s;
+}
+
+.btn-text-link:hover:not(:disabled) {
+  opacity: 0.8;
+}
+
+.btn-text-link:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Success Screen Styles */
+.success-icon {
+  background: linear-gradient(135deg, #10B981 0%, #059669 100%) !important;
+  width: 100px !important;
+  height: 100px !important;
+  margin: 0 auto 20px !important;
+}
+
+.success-icon svg {
+  width: 48px !important;
+  height: 48px !important;
+}

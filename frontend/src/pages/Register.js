@@ -26,10 +26,10 @@ const Register = () => {
     number: false,
     letter: false
   });
-  const [otpSent, setOtpSent] = useState(false);
+  const [registrationStep, setRegistrationStep] = useState('form'); // 'form', 'otp', 'success'
   const [otp, setOtp] = useState('');
-  const [otpVerified, setOtpVerified] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
+  const [tempUserData, setTempUserData] = useState(null);
   const navigate = useNavigate();
 
   const validateEmail = (email) => {
@@ -74,34 +74,30 @@ const Register = () => {
     }
   };
 
-  const sendOTP = async () => {
-    // Validate email first
-    if (!validateEmail(formData.email)) {
-      toast.error('Please enter a valid email address');
-      return;
-    }
-
+  const sendOTPAfterValidation = async () => {
     setLoading(true);
     try {
-      await axios.post(`${process.env.REACT_APP_API_URL}/auth/send-otp`, {
+      const response = await axios.post(`${process.env.REACT_APP_API_URL}/auth/send-otp`, {
         email: formData.email,
         purpose: 'registration'
       });
       
-      setOtpSent(true);
-      toast.success('OTP sent to your email! Check your inbox.');
-      
-      // Start cooldown
-      setResendCooldown(60);
-      const interval = setInterval(() => {
-        setResendCooldown((prev) => {
-          if (prev <= 1) {
-            clearInterval(interval);
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
+      if (response.data.success) {
+        setRegistrationStep('otp');
+        toast.success('OTP sent to your email! Check your inbox.');
+        
+        // Start cooldown
+        setResendCooldown(60);
+        const interval = setInterval(() => {
+          setResendCooldown((prev) => {
+            if (prev <= 1) {
+              clearInterval(interval);
+              return 0;
+            }
+            return prev - 1;
+          });
+        }, 1000);
+      }
     } catch (error) {
       console.error('Error sending OTP:', error);
       toast.error(error.response?.data?.message || 'Failed to send OTP. Please try again.');
@@ -110,7 +106,7 @@ const Register = () => {
     }
   };
 
-  const verifyOTP = async () => {
+  const verifyOTPAndRegister = async () => {
     if (!otp || otp.length !== 6) {
       toast.error('Please enter a valid 6-digit OTP');
       return;
@@ -118,19 +114,59 @@ const Register = () => {
 
     setLoading(true);
     try {
+      // First verify OTP
       await axios.post(`${process.env.REACT_APP_API_URL}/auth/verify-otp`, {
         email: formData.email,
         otp
       });
       
-      setOtpVerified(true);
-      toast.success('Email verified successfully!');
+      // Then create user account
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        formData.email,
+        formData.password
+      );
+
+      await updateProfile(userCredential.user, {
+        displayName: formData.name
+      });
+
+      await setDoc(doc(db, 'users', userCredential.user.uid), {
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        role: 'user',
+        createdAt: new Date().toISOString(),
+        emailVerified: true
+      });
+      
+      setRegistrationStep('success');
     } catch (error) {
-      console.error('Error verifying OTP:', error);
-      toast.error(error.response?.data?.message || 'Invalid OTP. Please try again.');
+      console.error('Error during registration:', error);
+      if (error.response) {
+        toast.error(error.response.data.message || 'Invalid OTP');
+      } else if (error.code) {
+        switch (error.code) {
+          case 'auth/email-already-in-use':
+            toast.error('Email already in use');
+            break;
+          case 'auth/weak-password':
+            toast.error('Password is too weak');
+            break;
+          default:
+            toast.error('Registration failed. Please try again.');
+        }
+      } else {
+        toast.error('Registration failed. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
+  };
+
+  const resendOTP = () => {
+    setOtp('');
+    sendOTPAfterValidation();
   };
 
   const handleSubmit = async (e) => {
@@ -139,12 +175,6 @@ const Register = () => {
     // Validate email
     if (!validateEmail(formData.email)) {
       toast.error('Please enter a valid email address');
-      return;
-    }
-
-    // Check if OTP is verified
-    if (!otpVerified) {
-      toast.error('Please verify your email with OTP first');
       return;
     }
 
@@ -167,49 +197,11 @@ const Register = () => {
       return;
     }
 
-    setLoading(true);
-
-    try {
-      // Create user account
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
-        formData.email,
-        formData.password
-      );
-
-      // Update display name
-      await updateProfile(userCredential.user, {
-        displayName: formData.name
-      });
-
-      // Create user document in Firestore
-      await setDoc(doc(db, 'users', userCredential.user.uid), {
-        displayName: formData.name,
-        email: formData.email,
-        phone: formData.phone,
-        role: 'user',
-        createdAt: new Date()
-      });
-
-      toast.success('Registration successful! Welcome to SET CAM!');
-      navigate('/services');
-    } catch (error) {
-      console.error('Registration error:', error);
-      let errorMessage = 'Failed to register';
-      
-      if (error.code === 'auth/email-already-in-use') {
-        errorMessage = 'An account with this email already exists';
-      } else if (error.code === 'auth/invalid-email') {
-        errorMessage = 'Invalid email address';
-      } else if (error.code === 'auth/weak-password') {
-        errorMessage = 'Password is too weak';
-      }
-      
-      toast.error(errorMessage);
-    } finally {
-      setLoading(false);
-    }
+    // All validation passed, send OTP
+    await sendOTPAfterValidation();
   };
+
+
 
   const isPasswordMatch = formData.password && formData.confirmPassword && 
                           formData.password === formData.confirmPassword;
@@ -224,15 +216,18 @@ const Register = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <div className="auth-header">
-          <div className="auth-icon">
-            <UserPlus size={32} />
-          </div>
-          <h2>Create Account</h2>
-          <p>Register to book appointments</p>
-        </div>
+        {/* Step 1: Registration Form */}
+        {registrationStep === 'form' && (
+          <>
+            <div className="auth-header">
+              <div className="auth-icon">
+                <UserPlus size={32} />
+              </div>
+              <h2>Create Account</h2>
+              <p>Register to book appointments</p>
+            </div>
 
-        <form onSubmit={handleSubmit}>
+            <form onSubmit={handleSubmit}>
           <div className="form-group">
             <label>
               <User size={18} />
@@ -264,80 +259,10 @@ const Register = () => {
                 required
                 placeholder="you@example.com"
                 className={emailError ? 'error' : ''}
-                disabled={otpVerified}
               />
-              {!otpSent && !otpVerified && (
-                <button
-                  type="button"
-                  onClick={sendOTP}
-                  disabled={loading || !formData.email || emailError}
-                  className="btn btn-secondary"
-                  style={{ marginLeft: '10px', padding: '8px 16px', minWidth: '100px' }}
-                >
-                  {loading ? 'Sending...' : 'Send OTP'}
-                </button>
-              )}
-              {otpVerified && (
-                <Check size={20} color="#10B981" style={{ marginLeft: '10px' }} />
-              )}
             </div>
             {emailError && <span className="error-text">{emailError}</span>}
           </div>
-
-          {otpSent && !otpVerified && (
-            <motion.div 
-              className="form-group"
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              transition={{ duration: 0.3 }}
-            >
-              <label>
-                <Shield size={18} />
-                Enter OTP Code
-              </label>
-              <div className="input-wrapper">
-                <input
-                  type="text"
-                  value={otp}
-                  onChange={(e) => {
-                    const value = e.target.value.replace(/\D/g, '');
-                    if (value.length <= 6) setOtp(value);
-                  }}
-                  maxLength="6"
-                  placeholder="Enter 6-digit code"
-                  style={{ letterSpacing: '0.5em', fontSize: '18px' }}
-                />
-                <button
-                  type="button"
-                  onClick={verifyOTP}
-                  disabled={loading || otp.length !== 6}
-                  className="btn btn-primary"
-                  style={{ marginLeft: '10px', padding: '8px 16px', minWidth: '100px' }}
-                >
-                  {loading ? 'Verifying...' : 'Verify'}
-                </button>
-              </div>
-              <div style={{ marginTop: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: '12px', color: '#666' }}>
-                  Didn't receive the code?
-                </span>
-                {resendCooldown > 0 ? (
-                  <span style={{ fontSize: '12px', color: '#DC143C' }}>
-                    Resend in {resendCooldown}s
-                  </span>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={sendOTP}
-                    className="btn btn-text"
-                    style={{ padding: '0', fontSize: '12px', color: '#DC143C' }}
-                  >
-                    Resend OTP
-                  </button>
-                )}
-              </div>
-            </motion.div>
-          )}
 
           <div className="form-group">
             <label>
@@ -448,15 +373,149 @@ const Register = () => {
               </>
             )}
           </motion.button>
-        </form>
+            </form>
 
-        <div className="auth-divider">
-          <span>Already have an account?</span>
-        </div>
+            <div className="auth-divider">
+              <span>Already have an account?</span>
+            </div>
 
-        <Link to="/login" className="auth-link-button">
-          Login here
-        </Link>
+            <Link to="/login" className="auth-link-button">
+              Login here
+            </Link>
+          </>
+        )}
+
+        {/* Step 2: OTP Verification */}
+        {registrationStep === 'otp' && (
+          <>
+            <div className="auth-header">
+              <div className="auth-icon" style={{ background: 'linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)' }}>
+                <Shield size={32} />
+              </div>
+              <h2>Verify Your Email</h2>
+              <p>We've sent a 6-digit code to <strong>{formData.email}</strong></p>
+            </div>
+
+            <div className="otp-verification-container">
+              <div className="form-group">
+                <label>Enter OTP Code</label>
+                <input
+                  type="text"
+                  value={otp}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/\D/g, '');
+                    if (value.length <= 6) setOtp(value);
+                  }}
+                  maxLength="6"
+                  placeholder="000000"
+                  className="otp-input"
+                  autoFocus
+                />
+              </div>
+
+              <motion.button 
+                type="button"
+                onClick={verifyOTPAndRegister}
+                disabled={loading || otp.length !== 6}
+                className="btn btn-primary btn-block"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                {loading ? (
+                  <>
+                    <div className="spinner-small"></div>
+                    Verifying...
+                  </>
+                ) : (
+                  <>
+                    <Check size={20} />
+                    Verify & Create Account
+                  </>
+                )}
+              </motion.button>
+
+              <div className="otp-resend-container">
+                <span>Didn't receive the code?</span>
+                {resendCooldown > 0 ? (
+                  <span className="resend-cooldown">Resend in {resendCooldown}s</span>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={resendOTP}
+                    className="btn-text-link"
+                    disabled={loading}
+                  >
+                    Resend OTP
+                  </button>
+                )}
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setRegistrationStep('form');
+                  setOtp('');
+                }}
+                className="btn btn-secondary btn-block"
+                style={{ marginTop: '10px' }}
+              >
+                Back to Form
+              </button>
+            </div>
+          </>
+        )}
+
+        {/* Step 3: Success Screen */}
+        {registrationStep === 'success' && (
+          <>
+            <div className="auth-header">
+              <motion.div 
+                className="auth-icon success-icon"
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ type: 'spring', stiffness: 200, damping: 10 }}
+              >
+                <Check size={48} strokeWidth={3} />
+              </motion.div>
+              <motion.h2
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+              >
+                Registration Successful!
+              </motion.h2>
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.4 }}
+              >
+                Your account has been created successfully.
+              </motion.p>
+            </div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6 }}
+              style={{ textAlign: 'center', padding: '20px 0' }}
+            >
+              <p style={{ color: '#666', marginBottom: '24px' }}>
+                Welcome to SET CAM, <strong>{formData.name}</strong>!<br />
+                You can now login to book appointments.
+              </p>
+
+              <motion.button
+                onClick={() => navigate('/login')}
+                className="btn btn-primary btn-block"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                <Check size={20} />
+                Proceed to Login
+              </motion.button>
+            </motion.div>
+          </>
+        )}
       </motion.div>
     </div>
   );

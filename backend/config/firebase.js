@@ -19,10 +19,24 @@ console.log('- PROJECT_ID:', process.env.FIREBASE_PROJECT_ID ? '✓ Set' : '✗ 
 console.log('- CLIENT_EMAIL:', process.env.FIREBASE_CLIENT_EMAIL ? '✓ Set' : '✗ Missing');
 console.log('- PRIVATE_KEY:', process.env.FIREBASE_PRIVATE_KEY ? '✓ Set' : '✗ Missing');
 
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-  databaseURL: process.env.FIREBASE_DATABASE_URL
-});
+// Check if all required env vars are present
+if (!process.env.FIREBASE_PROJECT_ID || !process.env.FIREBASE_CLIENT_EMAIL || !process.env.FIREBASE_PRIVATE_KEY) {
+  console.error('❌ CRITICAL: Missing Firebase environment variables!');
+  console.error('Please set FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, and FIREBASE_PRIVATE_KEY in Render');
+  process.exit(1);
+}
+
+try {
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+    databaseURL: process.env.FIREBASE_DATABASE_URL
+  });
+
+  console.log('✓ Firebase Admin SDK initialized successfully');
+} catch (error) {
+  console.error('❌ Failed to initialize Firebase Admin SDK:', error.message);
+  process.exit(1);
+}
 
 const db = admin.firestore();
 const auth = admin.auth();

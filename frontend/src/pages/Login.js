@@ -159,6 +159,12 @@ const Login = () => {
           </motion.button>
         </form>
 
+        <div style={{ textAlign: 'center', marginTop: '15px' }}>
+          <Link to="/forgot-password" style={{ color: '#DC143C', fontSize: '14px', textDecoration: 'none' }}>
+            Forgot Password?
+          </Link>
+        </div>
+
         <div className="auth-divider">
           <span>Don't have an account?</span>
         </div>

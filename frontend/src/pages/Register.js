@@ -5,7 +5,8 @@ import { doc, setDoc } from 'firebase/firestore';
 import { useNavigate, Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { motion } from 'framer-motion';
-import { Eye, EyeOff, Mail, Lock, User, Phone, UserPlus, Check, X } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, User, Phone, UserPlus, Check, X, Shield } from 'lucide-react';
+import axios from 'axios';
 import './Auth.css';
 
 const Register = () => {
@@ -25,6 +26,10 @@ const Register = () => {
     number: false,
     letter: false
   });
+  const [otpSent, setOtpSent] = useState(false);
+  const [otp, setOtp] = useState('');
+  const [otpVerified, setOtpVerified] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
   const navigate = useNavigate();
 
   const validateEmail = (email) => {
@@ -69,12 +74,77 @@ const Register = () => {
     }
   };
 
+  const sendOTP = async () => {
+    // Validate email first
+    if (!validateEmail(formData.email)) {
+      toast.error('Please enter a valid email address');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await axios.post(`${process.env.REACT_APP_API_URL}/auth/send-otp`, {
+        email: formData.email,
+        purpose: 'registration'
+      });
+      
+      setOtpSent(true);
+      toast.success('OTP sent to your email! Check your inbox.');
+      
+      // Start cooldown
+      setResendCooldown(60);
+      const interval = setInterval(() => {
+        setResendCooldown((prev) => {
+          if (prev <= 1) {
+            clearInterval(interval);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    } catch (error) {
+      console.error('Error sending OTP:', error);
+      toast.error(error.response?.data?.message || 'Failed to send OTP. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const verifyOTP = async () => {
+    if (!otp || otp.length !== 6) {
+      toast.error('Please enter a valid 6-digit OTP');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await axios.post(`${process.env.REACT_APP_API_URL}/auth/verify-otp`, {
+        email: formData.email,
+        otp
+      });
+      
+      setOtpVerified(true);
+      toast.success('Email verified successfully!');
+    } catch (error) {
+      console.error('Error verifying OTP:', error);
+      toast.error(error.response?.data?.message || 'Invalid OTP. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     // Validate email
     if (!validateEmail(formData.email)) {
       toast.error('Please enter a valid email address');
+      return;
+    }
+
+    // Check if OTP is verified
+    if (!otpVerified) {
+      toast.error('Please verify your email with OTP first');
       return;
     }
 
@@ -194,10 +264,80 @@ const Register = () => {
                 required
                 placeholder="you@example.com"
                 className={emailError ? 'error' : ''}
+                disabled={otpVerified}
               />
+              {!otpSent && !otpVerified && (
+                <button
+                  type="button"
+                  onClick={sendOTP}
+                  disabled={loading || !formData.email || emailError}
+                  className="btn btn-secondary"
+                  style={{ marginLeft: '10px', padding: '8px 16px', minWidth: '100px' }}
+                >
+                  {loading ? 'Sending...' : 'Send OTP'}
+                </button>
+              )}
+              {otpVerified && (
+                <Check size={20} color="#10B981" style={{ marginLeft: '10px' }} />
+              )}
             </div>
             {emailError && <span className="error-text">{emailError}</span>}
           </div>
+
+          {otpSent && !otpVerified && (
+            <motion.div 
+              className="form-group"
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              transition={{ duration: 0.3 }}
+            >
+              <label>
+                <Shield size={18} />
+                Enter OTP Code
+              </label>
+              <div className="input-wrapper">
+                <input
+                  type="text"
+                  value={otp}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/\D/g, '');
+                    if (value.length <= 6) setOtp(value);
+                  }}
+                  maxLength="6"
+                  placeholder="Enter 6-digit code"
+                  style={{ letterSpacing: '0.5em', fontSize: '18px' }}
+                />
+                <button
+                  type="button"
+                  onClick={verifyOTP}
+                  disabled={loading || otp.length !== 6}
+                  className="btn btn-primary"
+                  style={{ marginLeft: '10px', padding: '8px 16px', minWidth: '100px' }}
+                >
+                  {loading ? 'Verifying...' : 'Verify'}
+                </button>
+              </div>
+              <div style={{ marginTop: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: '12px', color: '#666' }}>
+                  Didn't receive the code?
+                </span>
+                {resendCooldown > 0 ? (
+                  <span style={{ fontSize: '12px', color: '#DC143C' }}>
+                    Resend in {resendCooldown}s
+                  </span>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={sendOTP}
+                    className="btn btn-text"
+                    style={{ padding: '0', fontSize: '12px', color: '#DC143C' }}
+                  >
+                    Resend OTP
+                  </button>
+                )}
+              </div>
+            </motion.div>
+          )}
 
           <div className="form-group">
             <label>

@@ -184,8 +184,47 @@ const sendEmail = async (to, template) => {
   }
 };
 
+// Generate 6-digit OTP
+const generateOTP = () => {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+};
+
+// OTP Email Template
+const otpTemplate = (otp, purpose) => ({
+  subject: `Your OTP Code - SET CAM`,
+  html: `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+      <div style="background: #DC143C; color: white; padding: 20px; text-align: center;">
+        <h1>Verification Code</h1>
+      </div>
+      <div style="padding: 20px; background: #f9f9f9;">
+        <p>Hello,</p>
+        <p>Your OTP code for ${purpose === 'registration' ? 'account registration' : 'password reset'} is:</p>
+        
+        <div style="background: white; padding: 30px; text-align: center; border-radius: 8px; margin: 20px 0;">
+          <h1 style="color: #DC143C; font-size: 48px; letter-spacing: 10px; margin: 0;">${otp}</h1>
+        </div>
+        
+        <p><strong>This code will expire in 10 minutes.</strong></p>
+        <p>If you didn't request this code, please ignore this email.</p>
+        
+        <p style="color: #666; font-size: 12px; margin-top: 30px;">
+          This is an automated email. Please do not reply to this message.
+        </p>
+      </div>
+    </div>
+  `
+});
+
 // Exported functions
 const emailService = {
+  generateOTP,
+  
+  sendOTP: async (userEmail, otp, purpose) => {
+    const template = otpTemplate(otp, purpose);
+    return await sendEmail(userEmail, template);
+  },
+
   sendBookingConfirmation: async (userEmail, appointment) => {
     const template = templates.bookingConfirmation(appointment);
     return await sendEmail(userEmail, template);

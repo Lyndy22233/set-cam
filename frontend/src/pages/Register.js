@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
-import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
-import { auth, db } from '../config/firebase';
-import { doc, setDoc } from 'firebase/firestore';
+import { signInWithCustomToken } from 'firebase/auth';
+import { auth } from '../config/firebase';
 import { useNavigate, Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { motion } from 'framer-motion';
@@ -130,50 +129,32 @@ const Register = () => {
 
     setLoading(true);
     try {
-      // First verify OTP
-      await axios.post(`${process.env.REACT_APP_API_URL}/auth/verify-otp`, {
+      // Complete backend registration (verifies OTP + creates user)
+      const response = await axios.post(`${process.env.REACT_APP_API_URL}/auth/register-complete`, {
         email: formData.email,
+        password: formData.password,
+        name: formData.name,
+        phone: formData.phone,
         otp
       }, {
-        timeout: 10000 // 10 second timeout
-      });
-      
-      // Then create user account
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
-        formData.email,
-        formData.password
-      );
-
-      await updateProfile(userCredential.user, {
-        displayName: formData.name
+        timeout: 15000 // 15 second timeout for complete registration
       });
 
-      await setDoc(doc(db, 'users', userCredential.user.uid), {
-        name: formData.name,
-        email: formData.email,
-        phone: formData.phone,
-        role: 'user',
-        createdAt: new Date().toISOString(),
-        emailVerified: true
-      });
-      
-      setRegistrationStep('success');
+      if (response.data.success) {
+        // Sign in with custom token
+        await signInWithCustomToken(auth, response.data.customToken);
+        
+        setRegistrationStep('success');
+        toast.success('Registration successful!');
+      }
     } catch (error) {
       console.error('Error during registration:', error);
-      if (error.response) {
-        toast.error(error.response.data.message || 'Invalid OTP');
-      } else if (error.code) {
-        switch (error.code) {
-          case 'auth/email-already-in-use':
-            toast.error('Email already in use');
-            break;
-          case 'auth/weak-password':
-            toast.error('Password is too weak');
-            break;
-          default:
-            toast.error('Registration failed. Please try again.');
-        }
+      if (error.code === 'ECONNABORTED') {
+        toast.error('Request timeout. Please check your connection and try again.');
+      } else if (error.message && error.message.includes('Network Error')) {
+        toast.error('Network error. Please try again.');
+      } else if (error.response) {
+        toast.error(error.response.data.message || 'Registration failed');
       } else {
         toast.error('Registration failed. Please try again.');
       }

@@ -3,7 +3,110 @@ const router = express.Router();
 const { auth, db } = require('../config/firebase');
 const emailService = require('../services/emailService');
 
-// Register user
+// Complete backend registration (creates user in Firebase Auth + Firestore)
+router.post('/register-complete', async (req, res) => {
+  try {
+    const { email, password, name, phone, otp } = req.body;
+
+    // Basic validation
+    if (!email || !password || !name || !otp) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email, password, name, and OTP are required'
+      });
+    }
+
+    // Verify OTP first
+    const otpDoc = await db.collection('otps').doc(email).get();
+
+    if (!otpDoc.exists) {
+      return res.status(400).json({
+        success: false,
+        message: 'OTP not found or expired'
+      });
+    }
+
+    const otpData = otpDoc.data();
+
+    // Check if OTP is expired
+    if (new Date(otpData.expiresAt) < new Date()) {
+      await db.collection('otps').doc(email).delete();
+      return res.status(400).json({
+        success: false,
+        message: 'OTP has expired. Please request a new one.'
+      });
+    }
+
+    // Check if OTP matches
+    if (otpData.otp !== otp) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid OTP'
+      });
+    }
+
+    // Check if purpose is registration
+    if (otpData.purpose !== 'registration') {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid OTP purpose'
+      });
+    }
+
+    // Create user in Firebase Auth
+    const userRecord = await auth.createUser({
+      email,
+      password,
+      displayName: name,
+      emailVerified: true // Mark as verified since OTP was verified
+    });
+
+    // Create user document in Firestore
+    await db.collection('users').doc(userRecord.uid).set({
+      name,
+      email,
+      phone: phone || '',
+      role: 'user',
+      createdAt: new Date().toISOString(),
+      emailVerified: true
+    });
+
+    // Delete OTP record
+    await db.collection('otps').doc(email).delete();
+
+    // Create custom token for immediate login
+    const customToken = await auth.createCustomToken(userRecord.uid);
+
+    res.status(201).json({
+      success: true,
+      message: 'User registered successfully',
+      customToken,
+      user: {
+        uid: userRecord.uid,
+        email: userRecord.email,
+        displayName: userRecord.displayName
+      }
+    });
+  } catch (error) {
+    console.error('Error registering user:', error);
+    
+    // Handle specific Firebase errors
+    if (error.code === 'auth/email-already-exists') {
+      return res.status(400).json({
+        success: false,
+        message: 'Email already in use'
+      });
+    }
+    
+    res.status(500).json({
+      success: false,
+      message: 'Failed to register user',
+      error: error.message
+    });
+  }
+});
+
+// Register user (legacy endpoint)
 router.post('/register', async (req, res) => {
   try {
     const { email, password, displayName } = req.body;

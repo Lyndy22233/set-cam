@@ -394,17 +394,150 @@ p {
 .justify-center { justify-content: center; }
 .w-full { width: 100%; }
 
-/* Responsive */
-@media (max-width: 768px) {
+/* ========================================
+   RESPONSIVE DESIGN
+   ======================================== */
+
+/* Tablet Styles */
+@media (max-width: 1024px) {
+  html {
+    font-size: 15px;
+  }
+
   .container {
+    max-width: 900px;
+    padding: 1.5rem;
+  }
+
+  h1 { font-size: 2.25rem; }
+  h2 { font-size: 1.75rem; }
+  h3 { font-size: 1.5rem; }
+
+  .card {
+    padding: 1.75rem;
+  }
+
+  .btn, button {
+    padding: 10px 18px;
+    font-size: 14px;
+  }
+}
+
+/* Mobile Styles */
+@media (max-width: 768px) {
+  html {
+    font-size: 14px;
+  }
+
+  .container {
+    max-width: 100%;
     padding: 1rem;
   }
   
   h1 { font-size: 2rem; }
   h2 { font-size: 1.75rem; }
   h3 { font-size: 1.5rem; }
+  h4 { font-size: 1.25rem; }
+  h5 { font-size: 1.1rem; }
   
   .card {
-    padding: 1.5rem;
+    padding: 1.25rem;
+    border-radius: 10px;
+  }
+
+  .btn, button {
+    padding: 10px 16px;
+    font-size: 14px;
+    width: 100%;
+  }
+
+  .btn-sm {
+    padding: 8px 14px;
+    font-size: 13px;
+  }
+
+  /* Make tables responsive */
+  table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  /* Stack form elements */
+  .form-row {
+    flex-direction: column;
+  }
+
+  .form-group {
+    width: 100% !important;
+  }
+
+  /* Adjust modal for mobile */
+  .modal {
+    margin: 10px;
+    max-width: calc(100% - 20px);
+  }
+
+  .modal-body {
+    max-height: calc(100vh - 200px);
+    overflow-y: auto;
+  }
+}
+
+/* Small Mobile Styles */
+@media (max-width: 480px) {
+  html {
+    font-size: 13px;
+  }
+
+  .container {
+    padding: 0.75rem;
+  }
+
+  h1 { font-size: 1.75rem; }
+  h2 { font-size: 1.5rem; }
+  h3 { font-size: 1.25rem; }
+
+  .card {
+    padding: 1rem;
+    border-radius: 8px;
+  }
+
+  .btn, button {
+    padding: 10px 14px;
+    font-size: 13px;
+  }
+
+  /* Stack elements on very small screens */
+  .flex {
+    flex-direction: column;
+  }
+
+  .gap-2 {
+    gap: 0.5rem;
+  }
+}
+
+/* Landscape Mobile */
+@media (max-width: 896px) and (orientation: landscape) {
+  .container {
+    padding: 1rem 2rem;
+  }
+
+  .modal {
+    max-height: 85vh;
+    overflow-y: auto;
+  }
+}
+
+/* Touch Device Optimizations */
+@media (hover: none) and (pointer: coarse) {
+  button, .btn, a {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  input, textarea, select {
+    font-size: 16px !important; /* Prevents zoom on iOS */
   }
 }

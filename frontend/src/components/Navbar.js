@@ -4,7 +4,7 @@ import { signOut } from 'firebase/auth';
 import { auth, db } from '../config/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import { toast } from 'react-toastify';
-import { User, Settings, Calendar, Users, LayoutDashboard, LogOut, X } from 'lucide-react';
+import { User, Settings, Calendar, Users, LayoutDashboard, LogOut, X, Menu } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import NotificationCenter from './NotificationCenter';
 import './Navbar.css';
@@ -13,6 +13,7 @@ const Navbar = ({ user }) => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const checkAdminStatus = async () => {
@@ -128,7 +129,87 @@ const Navbar = ({ user }) => {
               <Link to="/login" className="btn-login">Login</Link>
             )}
           </div>
+
+          {/* Mobile Hamburger Button */}
+          <button 
+            className="mobile-menu-toggle"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label="Toggle menu"
+          >
+            {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
         </div>
+
+        {/* Mobile Menu */}
+        <AnimatePresence>
+          {mobileMenuOpen && (
+            <motion.div
+              className="mobile-menu"
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <div className="mobile-menu-content">
+                {user ? (
+                  <>
+                    {!isAdmin ? (
+                      <>
+                        <Link to="/my-appointments" onClick={() => setMobileMenuOpen(false)}>
+                          <Calendar size={20} />
+                          My Appointments
+                        </Link>
+                        <Link to="/profile" onClick={() => setMobileMenuOpen(false)}>
+                          <User size={20} />
+                          Profile
+                        </Link>
+                        <button onClick={() => { setMobileMenuOpen(false); handleLogoutClick(); }} className="mobile-logout">
+                          <LogOut size={20} />
+                          Logout
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <Link to="/admin/dashboard" onClick={() => setMobileMenuOpen(false)}>
+                          <LayoutDashboard size={20} />
+                          Dashboard
+                        </Link>
+                        <Link to="/admin/appointments" onClick={() => setMobileMenuOpen(false)}>
+                          <Calendar size={20} />
+                          Appointments
+                        </Link>
+                        <Link to="/admin/calendar" onClick={() => setMobileMenuOpen(false)}>
+                          <Calendar size={20} />
+                          Calendar
+                        </Link>
+                        <Link to="/admin/users" onClick={() => setMobileMenuOpen(false)}>
+                          <Users size={20} />
+                          Users
+                        </Link>
+                        <Link to="/admin/settings" onClick={() => setMobileMenuOpen(false)}>
+                          <Settings size={20} />
+                          Settings
+                        </Link>
+                        <Link to="/profile" onClick={() => setMobileMenuOpen(false)}>
+                          <User size={20} />
+                          Profile
+                        </Link>
+                        <button onClick={() => { setMobileMenuOpen(false); handleLogoutClick(); }} className="mobile-logout">
+                          <LogOut size={20} />
+                          Logout
+                        </button>
+                      </>
+                    )}
+                  </>
+                ) : (
+                  <Link to="/login" onClick={() => setMobileMenuOpen(false)} className="mobile-login">
+                    Login
+                  </Link>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </nav>
 
       {/* Logout Confirmation Modal */}

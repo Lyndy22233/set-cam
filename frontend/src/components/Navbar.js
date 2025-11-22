@@ -64,16 +64,22 @@ const Navbar = ({ user }) => {
           </Link>
           
           <ul className="navbar-menu">
-            {!isAdmin && (
+            {!isAdmin ? (
               <>
                 <li><Link to="/">Home</Link></li>
                 <li><Link to="/services">Services</Link></li>
                 <li><Link to="/about">About Us</Link></li>
                 <li><Link to="/contact">Contact</Link></li>
               </>
+            ) : (
+              <>
+                <li><Link to="/admin/dashboard" className="admin-link"><LayoutDashboard size={18} /> Dashboard</Link></li>
+                <li><Link to="/admin/appointments" className="admin-link"><Calendar size={18} /> Appointments</Link></li>
+                <li><Link to="/admin/calendar" className="admin-link"><Calendar size={18} /> Calendar</Link></li>
+                <li><Link to="/admin/users" className="admin-link"><Users size={18} /> Users</Link></li>
+                <li><Link to="/admin/settings" className="admin-link"><Settings size={18} /> Settings</Link></li>
+              </>
             )}
-            
-            {/* Admin menu items moved to hamburger - showing only in mobile menu */}
           </ul>
 
           {/* Desktop Actions */}
@@ -201,9 +207,9 @@ const Navbar = ({ user }) => {
             />
             <motion.div
               className="confirmation-modal"
-              initial={{ opacity: 0, scale: 0.9, y: -20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: -20 }}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
               transition={{ duration: 0.2 }}
             >
               <div className="modal-header">

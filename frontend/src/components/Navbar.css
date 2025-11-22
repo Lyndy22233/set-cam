@@ -222,13 +222,13 @@
   background: rgba(0, 0, 0, 0.6);
   backdrop-filter: blur(4px);
   z-index: 9998;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 .confirmation-modal {
-  position: relative;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   background: white;
   border-radius: 16px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
@@ -325,16 +325,6 @@
   display: none; /* Hidden by default on desktop */
   align-items: center;
   gap: 12px;
-}
-
-/* Admin always shows hamburger menu */
-.navbar-content.admin-nav .mobile-actions {
-  display: flex !important;
-}
-
-/* Admin hides desktop actions */
-.navbar-content.admin-nav .desktop-actions {
-  display: none !important;
 }
 
 .mobile-menu-toggle {

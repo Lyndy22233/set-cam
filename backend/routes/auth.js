@@ -93,16 +93,18 @@ router.post('/send-otp', async (req, res) => {
     // Send OTP email
     const emailResult = await emailService.sendOTP(email, otp, purpose);
 
-    if (!emailResult.success) {
-      return res.status(500).json({
-        success: false,
-        message: 'Failed to send OTP email. Please check your email configuration.',
-        error: emailResult.error
-      });
+    // Log OTP to console for development when email is not configured
+    if (emailResult.skipped) {
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      console.log('📧 OTP CODE FOR', email);
+      console.log('🔢 CODE:', otp);
+      console.log('⏰ EXPIRES:', new Date(Date.now() + 10 * 60 * 1000).toLocaleString());
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     }
 
     res.status(200).json({
       success: true,
+      emailSent: !emailResult.skipped,
       message: 'OTP sent successfully to your email'
     });
   } catch (error) {

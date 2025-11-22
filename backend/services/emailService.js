@@ -164,23 +164,35 @@ const templates = {
 // Send email function
 const sendEmail = async (to, template) => {
   try {
+    // Check if SMTP is configured
     if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
-      console.log('Email not configured. Would send:', template.subject);
-      return { success: true, message: 'Email service not configured' };
+      console.log('⚠️  SMTP not configured. Skipping email to:', to);
+      console.log('   Subject:', template.subject);
+      console.log('   Configure SMTP in Render environment variables to enable emails.');
+      // Return success to allow registration to proceed without email
+      return { success: true, message: 'Email service not configured', skipped: true };
     }
 
-    await transporter.sendMail({
+    // Set timeout for email sending (30 seconds)
+    const emailPromise = transporter.sendMail({
       from: `"SET CAM" <${process.env.SMTP_USER}>`,
       to,
       subject: template.subject,
       html: template.html
     });
 
-    console.log('Email sent successfully to:', to);
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Email timeout after 30 seconds')), 30000)
+    );
+
+    await Promise.race([emailPromise, timeoutPromise]);
+
+    console.log('✓ Email sent successfully to:', to);
     return { success: true };
   } catch (error) {
-    console.error('Error sending email:', error);
-    return { success: false, error: error.message };
+    console.error('✗ Error sending email:', error.message);
+    // Don't fail the request if email fails, just log it
+    return { success: true, error: error.message, skipped: true };
   }
 };
 

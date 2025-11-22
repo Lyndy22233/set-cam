@@ -84,7 +84,15 @@ const Register = () => {
       
       if (response.data.success) {
         setRegistrationStep('otp');
-        toast.success('OTP sent to your email! Check your inbox.');
+        
+        if (response.data.emailSent === false) {
+          toast.info('OTP generated! Check Render logs for the code (SMTP not configured).');
+          console.log('%c⚠️ SMTP NOT CONFIGURED', 'color: orange; font-size: 16px; font-weight: bold;');
+          console.log('%cCheck Render logs for OTP code at:', 'color: blue;');
+          console.log('%chttps://dashboard.render.com/web/srv-ctag8f52ng1s73blg3sg/logs', 'color: blue; text-decoration: underline;');
+        } else {
+          toast.success('OTP sent to your email! Check your inbox.');
+        }
         
         // Start cooldown
         setResendCooldown(60);

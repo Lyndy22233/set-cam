@@ -1,8 +1,20 @@
 const nodemailer = require('nodemailer');
+const axios = require('axios');
 
-// Only create transporter if SMTP is configured
+// Check if Brevo API key is configured
+const BREVO_API_KEY = process.env.BREVO_API_KEY;
+const BREVO_SENDER_EMAIL = process.env.BREVO_SENDER_EMAIL || 'noreply@set-cam.com';
+const BREVO_SENDER_NAME = process.env.BREVO_SENDER_NAME || 'SET CAM';
+
+if (BREVO_API_KEY) {
+  console.log('✓ Brevo API configured for email sending');
+} else {
+  console.log('⚠️ Brevo API not configured - OTP codes will be logged to console');
+}
+
+// Fallback: SMTP transporter (only if Brevo API not available)
 let transporter = null;
-if (process.env.SMTP_USER && process.env.SMTP_PASS) {
+if (!BREVO_API_KEY && process.env.SMTP_USER && process.env.SMTP_PASS) {
   transporter = nodemailer.createTransport({
     host: process.env.SMTP_HOST || 'smtp.gmail.com',
     port: parseInt(process.env.SMTP_PORT) || 587,
@@ -11,14 +23,11 @@ if (process.env.SMTP_USER && process.env.SMTP_PASS) {
       user: process.env.SMTP_USER,
       pass: process.env.SMTP_PASS
     },
-    connectionTimeout: 5000, // 5 second connection timeout
-    greetingTimeout: 5000,   // 5 second greeting timeout
-    socketTimeout: 5000      // 5 second socket timeout
+    connectionTimeout: 5000,
+    greetingTimeout: 5000,
+    socketTimeout: 5000
   });
-  
-  console.log('✓ Email transporter configured with SMTP');
-} else {
-  console.log('⚠️ SMTP not configured - OTP codes will be logged to console');
+  console.log('✓ Email transporter configured with SMTP (fallback)');
 }
 
 // Email templates
@@ -171,42 +180,94 @@ const templates = {
   })
 };
 
-// Send email function
-const sendEmail = async (to, template) => {
-  // Check if SMTP is configured - return immediately if not
-  if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
-    console.log('⚠️  SMTP NOT CONFIGURED - Email skipped');
-    console.log('📧 To:', to);
-    console.log('📝 Subject:', template.subject);
-    console.log('💡 Configure SMTP_USER and SMTP_PASS in Render to enable email sending.');
-    // Return immediately without any email attempt
-    return { success: true, message: 'SMTP not configured', skipped: true };
-  }
-
+// Send email via Brevo API
+const sendViaBrevoAPI = async (to, template) => {
   try {
-    // Wrap sendMail in a promise with timeout
+    const response = await axios.post(
+      'https://api.brevo.com/v3/smtp/email',
+      {
+        sender: {
+          name: BREVO_SENDER_NAME,
+          email: BREVO_SENDER_EMAIL
+        },
+        to: [{ email: to }],
+        subject: template.subject,
+        htmlContent: template.html
+      },
+      {
+        headers: {
+          'api-key': BREVO_API_KEY,
+          'Content-Type': 'application/json'
+        },
+        timeout: 10000
+      }
+    );
+
+    console.log('✓ Email sent via Brevo API to:', to);
+    return { success: true, emailSent: true, messageId: response.data.messageId };
+  } catch (error) {
+    console.error('✗ Brevo API error:', error.response?.data || error.message);
+    throw error;
+  }
+};
+
+// Send email via SMTP (fallback)
+const sendViaSMTP = async (to, template) => {
+  try {
     const sendMailPromise = transporter.sendMail({
-      from: `"SET CAM" <${process.env.SMTP_USER}>`,
+      from: `"${BREVO_SENDER_NAME}" <${process.env.SMTP_USER}>`,
       to,
       subject: template.subject,
       html: template.html
     });
 
-    // Create timeout promise (6 seconds)
     const timeoutPromise = new Promise((_, reject) => {
       setTimeout(() => reject(new Error('Email send timeout')), 6000);
     });
 
-    // Race between send and timeout
     await Promise.race([sendMailPromise, timeoutPromise]);
 
-    console.log('✓ Email sent successfully to:', to);
+    console.log('✓ Email sent via SMTP to:', to);
     return { success: true, emailSent: true };
   } catch (error) {
-    console.error('✗ Error sending email:', error.message);
-    // Don't fail the request if email fails, just log it
-    return { success: true, error: error.message, skipped: true, emailSent: false };
+    console.error('✗ SMTP error:', error.message);
+    throw error;
   }
+};
+
+// Main send email function
+const sendEmail = async (to, template) => {
+  // Try Brevo API first
+  if (BREVO_API_KEY) {
+    try {
+      return await sendViaBrevoAPI(to, template);
+    } catch (error) {
+      console.error('Brevo API failed');
+      if (transporter) {
+        try {
+          return await sendViaSMTP(to, template);
+        } catch (smtpError) {
+          return { success: true, error: smtpError.message, skipped: true, emailSent: false };
+        }
+      }
+      return { success: true, error: error.message, skipped: true, emailSent: false };
+    }
+  }
+
+  // Try SMTP if Brevo not configured
+  if (transporter) {
+    try {
+      return await sendViaSMTP(to, template);
+    } catch (error) {
+      return { success: true, error: error.message, skipped: true, emailSent: false };
+    }
+  }
+
+  // No email service configured
+  console.log('⚠️ No email service configured');
+  console.log('📧 To:', to);
+  console.log('📝 Subject:', template.subject);
+  return { success: true, message: 'No email service configured', skipped: true, emailSent: false };
 };
 
 // Generate 6-digit OTP

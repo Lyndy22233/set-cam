@@ -10,8 +10,15 @@ if (process.env.SMTP_USER && process.env.SMTP_PASS) {
     auth: {
       user: process.env.SMTP_USER,
       pass: process.env.SMTP_PASS
-    }
+    },
+    connectionTimeout: 5000, // 5 second connection timeout
+    greetingTimeout: 5000,   // 5 second greeting timeout
+    socketTimeout: 5000      // 5 second socket timeout
   });
+  
+  console.log('✓ Email transporter configured with SMTP');
+} else {
+  console.log('⚠️ SMTP not configured - OTP codes will be logged to console');
 }
 
 // Email templates
@@ -177,19 +184,28 @@ const sendEmail = async (to, template) => {
   }
 
   try {
-    await transporter.sendMail({
+    // Wrap sendMail in a promise with timeout
+    const sendMailPromise = transporter.sendMail({
       from: `"SET CAM" <${process.env.SMTP_USER}>`,
       to,
       subject: template.subject,
       html: template.html
     });
 
+    // Create timeout promise (6 seconds)
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('Email send timeout')), 6000);
+    });
+
+    // Race between send and timeout
+    await Promise.race([sendMailPromise, timeoutPromise]);
+
     console.log('✓ Email sent successfully to:', to);
-    return { success: true };
+    return { success: true, emailSent: true };
   } catch (error) {
     console.error('✗ Error sending email:', error.message);
     // Don't fail the request if email fails, just log it
-    return { success: true, error: error.message, skipped: true };
+    return { success: true, error: error.message, skipped: true, emailSent: false };
   }
 };
 

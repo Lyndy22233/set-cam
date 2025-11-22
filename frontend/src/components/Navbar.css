@@ -319,9 +319,19 @@
 
 /* Mobile Menu Styles */
 .mobile-actions {
-  display: none;
+  display: none; /* Hidden by default on desktop */
   align-items: center;
   gap: 12px;
+}
+
+/* Admin always shows hamburger menu */
+.navbar-content.admin-nav .mobile-actions {
+  display: flex !important;
+}
+
+/* Admin hides desktop actions */
+.navbar-content.admin-nav .desktop-actions {
+  display: none !important;
 }
 
 .mobile-menu-toggle {
@@ -454,7 +464,11 @@
 
   .confirmation-modal {
     min-width: 90%;
-    margin: 0 5%;
+    max-width: 90%;
+    width: 90%;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
   }
 }
 
@@ -480,6 +494,25 @@
   .mobile-menu-content button {
     padding: 10px 14px;
     font-size: 15px;
+  }
+
+  .confirmation-modal {
+    min-width: 95%;
+    max-width: 95%;
+    width: 95%;
+  }
+
+  .modal-header h3 {
+    font-size: 18px;
+  }
+
+  .modal-body p {
+    font-size: 14px;
+  }
+
+  .btn {
+    padding: 8px 16px;
+    font-size: 13px;
   }
 }
 

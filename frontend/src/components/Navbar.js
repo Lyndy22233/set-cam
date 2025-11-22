@@ -58,7 +58,7 @@ const Navbar = ({ user }) => {
   return (
     <>
       <nav className="navbar">
-        <div className="container navbar-content">
+        <div className={`container navbar-content ${isAdmin ? 'admin-nav' : ''}`}>
           <Link to={isAdmin ? "/admin/dashboard" : "/"} className="navbar-brand">
             <img src="/logo.png" alt="SETCAM Logo" className="navbar-logo" />
           </Link>
@@ -73,40 +73,7 @@ const Navbar = ({ user }) => {
               </>
             )}
             
-            {user && isAdmin && (
-              <>
-                <li>
-                  <Link to="/admin/dashboard" className="admin-link">
-                    <LayoutDashboard size={20} />
-                    Dashboard
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/admin/appointments" className="admin-link">
-                    <Calendar size={20} />
-                    Appointments
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/admin/calendar" className="admin-link">
-                    <Calendar size={20} />
-                    Calendar
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/admin/users" className="admin-link">
-                    <Users size={20} />
-                    Users
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/admin/settings" className="admin-link">
-                    <Settings size={20} />
-                    Settings
-                  </Link>
-                </li>
-              </>
-            )}
+            {/* Admin menu items moved to hamburger - showing only in mobile menu */}
           </ul>
 
           {/* Desktop Actions */}

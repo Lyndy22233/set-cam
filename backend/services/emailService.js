@@ -1,14 +1,17 @@
 const nodemailer = require('nodemailer');
 
-// Configure email transporter
+// Configure email transporter with timeout settings
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST || 'smtp.gmail.com',
-  port: process.env.SMTP_PORT || 587,
+  port: parseInt(process.env.SMTP_PORT) || 587,
   secure: false,
   auth: {
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASS
-  }
+  },
+  connectionTimeout: 10000, // 10 seconds
+  greetingTimeout: 10000,
+  socketTimeout: 10000
 });
 
 // Email templates
@@ -165,26 +168,21 @@ const templates = {
 const sendEmail = async (to, template) => {
   // Check if SMTP is configured - return immediately if not
   if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
-    console.log('⚠️  SMTP not configured. Skipping email to:', to);
-    console.log('   Subject:', template.subject);
-    // Return immediately without waiting
-    return { success: true, message: 'Email service not configured', skipped: true };
+    console.log('⚠️  SMTP NOT CONFIGURED - Email skipped');
+    console.log('📧 To:', to);
+    console.log('📝 Subject:', template.subject);
+    console.log('💡 Configure SMTP_USER and SMTP_PASS in Render to enable email sending.');
+    // Return immediately without any email attempt
+    return { success: true, message: 'SMTP not configured', skipped: true };
   }
 
   try {
-    // Set timeout for email sending (5 seconds only)
-    const emailPromise = transporter.sendMail({
+    await transporter.sendMail({
       from: `"SET CAM" <${process.env.SMTP_USER}>`,
       to,
       subject: template.subject,
       html: template.html
     });
-
-    const timeoutPromise = new Promise((_, reject) => 
-      setTimeout(() => reject(new Error('Email timeout after 5 seconds')), 5000)
-    );
-
-    await Promise.race([emailPromise, timeoutPromise]);
 
     console.log('✓ Email sent successfully to:', to);
     return { success: true };

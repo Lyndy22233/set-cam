@@ -134,17 +134,13 @@ const Navbar = ({ user }) => {
           {/* Mobile Actions: Notification Bell + Hamburger */}
           <div className="mobile-actions">
             {user && <NotificationCenter />}
-            {user ? (
-              <button 
-                className="mobile-menu-toggle"
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                aria-label="Toggle menu"
-              >
-                {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-              </button>
-            ) : (
-              <Link to="/login" className="btn-login">Login</Link>
-            )}
+            <button 
+              className="mobile-menu-toggle"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              aria-label="Toggle menu"
+            >
+              {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
           </div>
         </div>
 
@@ -210,9 +206,14 @@ const Navbar = ({ user }) => {
                     )}
                   </>
                 ) : (
-                  <Link to="/login" onClick={() => setMobileMenuOpen(false)} className="mobile-login">
-                    Login
-                  </Link>
+                  <>
+                    <Link to="/login" onClick={() => setMobileMenuOpen(false)} className="mobile-login">
+                      Login
+                    </Link>
+                    <Link to="/register" onClick={() => setMobileMenuOpen(false)} className="mobile-login">
+                      Register
+                    </Link>
+                  </>
                 )}
               </div>
             </motion.div>
